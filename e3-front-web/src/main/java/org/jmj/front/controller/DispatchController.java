@@ -17,6 +17,7 @@ public class DispatchController {
 		ModelAndView view = new ModelAndView("index");
 		view.addObject("ad1List", frontContcentCategoryService.getConcont(89L));
 		return view;
+		
 	}
 
 }
