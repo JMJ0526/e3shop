@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jms="http://www.springframework.org/schema/jms"
+	xsi:schemaLocation="http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+		destroy-method="stop">
+		<property name="connectionFactory">
+			<bean  class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL" value="nio://192.168.1.102:61616"/>
+				<!-- <property name="brokerURL" value="tcp://192.168.1.102:61616"/> -->
+			</bean>
+		</property>
+		<property name="maxConnections" value="100" />
+	</bean>
+
+	<!-- jms模板 -->
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="pooledConnectionFactory" />
+		<property name="messageConverter">
+			<bean
+				class="org.springframework.jms.support.converter.SimpleMessageConverter" />
+		</property>
+		<property name="defaultDestination" ref="itemTopic" />
+	</bean>
+	
+	<!-- 配置主题 -->
+	<bean id="itemTopic" class="org.apache.activemq.command.ActiveMQTopic">
+		<constructor-arg index="0" value="item-topic"/>
+	</bean>
+	
+	<bean id="itemQueue" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg index="0" value="item-queue"/>
+	</bean>
+
+	<!-- 配置信息消费者 -->
+	<bean id="defaultMessageListenerContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="pooledConnectionFactory" />
+		<property name="destination" ref="itemQueue"/>
+		<property name="messageListener" ref="messageListener"/>
+	</bean>
+	
+	<bean id="messageListener" class="org.jmj.mqlistener.ItemMessageListener"/>
+
+</beans>
