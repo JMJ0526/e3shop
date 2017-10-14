@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+	
+		<context:component-scan base-package="org.jmj.service.impl"/>
+	
+	<!-- service -->
+	<bean id="fastDfsClient" class="org.jmj.fastdfs.FastDfsClient" init-method="init" scope="singleton"/>
+	
+	<bean id="itemSerivceImpl" class="org.jmj.service.impl.ItemServiceImpl" scope="singleton"/>
+	
+	<bean id="uploadFileServiceImpl" class="org.jmj.service.impl.UploadFileServiceImpl" scope="singleton"/>
+	
+	<bean id="contentCategoryServiceImpl" class="org.jmj.service.impl.ContentCategoryServiceImpl" scope="singleton"/>
+	
+	<bean id="frontContcentCategoryServiceImpl" class="org.jmj.front.service.impl.FrontContcentCategoryServiceImpl" scope="singleton"/>
+	
+	<bean id="searchServiceImpl" class="org.jmj.front.service.impl.SearchServiceImpl"/>
+
+	<bean id="userServiceImpl" class="org.jmj.auth.impl.UserServiceImpl"/>
+	
+	<bean id="cartServiceImpl"  class="org.jmj.cart.impl.CartServiceImpl"/>
+	
+	<bean id="orderServiceImpl"  class="org.jmj.order.impl.OrderServiceImpl"/>
+	
+	 <!-- 提供方应用信息，用于计算依赖关系 -->
+    <dubbo:application name="e3-manager"/>
+
+    <!-- 使用multicast广播注册中心暴露服务地址 -->
+    <dubbo:registry protocol="zookeeper" address="192.168.1.102:2181"/>
+
+    <!-- 用dubbo协议在20880端口暴露服务 -->
+    <dubbo:protocol name="dubbo" port="20880"/>
+
+    <!-- 声明需要暴露的服务接口 -->
+    <dubbo:service interface="org.jmj.service.ItemSerivce" ref="itemSerivceImpl"/>
+	<dubbo:service interface="org.jmj.service.fastdfs.UploadFileService" ref="uploadFileServiceImpl"/>
+	<dubbo:service interface="org.jmj.service.ContentCategoryService" ref="contentCategoryServiceImpl"/>
+	<dubbo:service interface="org.jmj.front.service.FrontContcentCategoryService" ref="frontContcentCategoryServiceImpl"/>
+	<dubbo:service interface="org.jmj.search.service.SearchService" ref="searchServiceImpl"/>
+	<dubbo:service interface="org.jmj.auth.UserService" ref="userServiceImpl"/>
+	<dubbo:service interface="org.jmj.cart.CartService" ref="cartServiceImpl"/>
+	<dubbo:service interface="org.jmj.order.OrderService" ref="orderServiceImpl"/>
+</beans>

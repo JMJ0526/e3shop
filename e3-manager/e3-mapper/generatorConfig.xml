@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+ "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+	<context id="context1">
+	 <plugin type="org.mybatis.generator.plugins.SerializablePlugin"/>
+	<commentGenerator >
+		<property name="suppressAllComments" value="true"/>
+	</commentGenerator>
+		<jdbcConnection connectionURL="jdbc:mysql:///e3mail"
+			driverClass="com.mysql.jdbc.Driver" password="root" userId="root" />
+			
+		<javaTypeResolver>
+			<property name="forceBigDecimals" value="false" />
+		</javaTypeResolver>
+
+		<javaModelGenerator targetPackage="org.jmj.bean"
+			targetProject=".\src\main\java">
+			<property name="enableSubPackages" value="true" />
+			<property name="trimStrings" value="true" />
+		</javaModelGenerator>
+		
+		<!-- mapper.xml -->
+		<sqlMapGenerator targetPackage="xml"
+			targetProject=".\src\main\resources">
+			<property name="enableSubPackages" value="true" />
+		</sqlMapGenerator>
+	
+		<!-- mapper接口 -->
+		<javaClientGenerator targetPackage="org.jmj.mappers" 
+			targetProject=".\src\main\java" type="XMLMAPPER">
+			<property name="enableSubPackages" value="true" />
+		</javaClientGenerator>
+
+		<table tableName="tb_content"  domainObjectName="TbContent"/>
+		<table tableName="tb_content_category"  domainObjectName="TbContentCategory"/>
+		<table tableName="tb_item"  domainObjectName="TbItem"/>
+		<table tableName="tb_item_cat"  domainObjectName="TbItemCat"/>
+		<table tableName="tb_item_desc"  domainObjectName="TbItemDesc"/>
+		<table tableName="tb_item_param"  domainObjectName="TbItemParm"/>
+		<table tableName="tb_item_param_item"  domainObjectName="TbItemParmItem"/>
+		<table tableName="tb_order"  domainObjectName="TbOrder"/>
+		<table tableName="tb_order_item"  domainObjectName="TbOrderIetm"/>
+		<table tableName="tb_order_shipping"  domainObjectName="TbOrderShipping"/>
+		<table tableName="tb_user"  domainObjectName="TbUser"/>
+	
+	</context>
+</generatorConfiguration>
