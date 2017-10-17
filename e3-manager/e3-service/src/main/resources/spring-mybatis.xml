@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	
+	
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"  init-method="init" destroy-method="close">
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/>
+		<property name="driverClassName" value="${jdbc.driver}"/>
+		<property name="url" value="${jdbc.url}"/>
+		<property name="initialSize" value="${initialSize}"/>
+		<property name="maxActive" value="${maxActive}"/>
+		<property name="minIdle" value="${minIdle}"/>
+		<property name="maxWait" value="${maxWait}"/>
+		<property name="poolPreparedStatements" value="${poolPreparedStatements}"/>
+		<property name="filters" value="config"/>
+		<property name="connectionProperties" value="config.decrypt=true;config.decrypt.key=${publickey}"/>
+		<!-- <property name="connectionProperties" value="config.file=file:///home/admin/druid-pool.properties" /> -->
+	</bean>
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">  
+		<property name="dataSource" ref="dataSource"/>
+		<property name="configLocation" value="classpath:mybatis-config.xml"/>
+		<property name="mapperLocations" value="classpath:xml/*Mapper.xml"/>
+	</bean>
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="org.jmj.mappers"/>
+	</bean>
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="update*" read-only="false" rollback-for="java.lang.Exception"
+				propagation="REQUIRES_NEW" />
+			<tx:method name="del*" read-only="false" rollback-for="java.lang.Exception"
+				propagation="REQUIRES_NEW" />
+			<tx:method name="remove*" read-only="false" rollback-for="java.lang.Exception"
+				propagation="REQUIRES_NEW" />
+			<tx:method name="add*" read-only="false" rollback-for="java.lang.Exception"
+				propagation="REQUIRES_NEW" />	
+			<tx:method name="save*" read-only="false" rollback-for="java.lang.Exception"
+				propagation="REQUIRES_NEW" />
+			<tx:method name="insert*" read-only="false" rollback-for="java.lang.Exception"
+				propagation="REQUIRES_NEW" />
+			<tx:method name="find*" read-only="true" propagation="SUPPORTS" />
+			<tx:method name="get*" read-only="true" propagation="SUPPORTS" />
+			<tx:method name="select*" read-only="true" propagation="SUPPORTS" />
+			<tx:method name="*" read-only="false" rollback-for="java.lang.Exception" />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:pointcut expression="execution(* org.jmj.service..*.*(..))"
+			id="pc" />
+		<aop:pointcut expression="execution(* org.jmj.front.service..*.*(..))"
+			id="frontpc" />	
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="pc" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="frontpc" />
+	</aop:config>
+	
+</beans>
