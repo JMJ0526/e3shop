@@ -1,0 +1,27 @@
+java -cp druid-1.1.0.jar com.alibaba.druid.filter.config.ConfigTools you_password
+
+得到primaryKey、publicKey、password将publicKey和password存到properties
+
+
+<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+     init-method="init" destroy-method="close">
+     <property name="url" value="jdbc:mysql:///databases" />
+     <property name="username" value="sa" />
+     <!--密码是经过加密的-->
+     <property name="password" value="${password}" />
+     <property name="filters" value="config" />
+     <property name="connectionProperties" value="config.decrypt=true;config.decrypt.key=${publickey}" />
+</bean>
+
+有三种方式配置：
+
+可以在配置文件my.properties中指定config.decrypt=true 
+也可以在DruidDataSource的ConnectionProperties中指定config.decrypt=true 
+也可以在jvm启动参数中指定-Ddruid.config.decrypt=true 
+
+privateKey:MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAumhCsC7HOgkQney9s9TAYab6tLtH64hqpgh5NLOOfguHPQEKkOeDI7+VQQVCqhwXGHNLBzNP7hOMw4Z3aFD4xQIDAQA
+BAkBWl5BDH7fUsdlSQ2NsYmxr8JGN22HxfBFux4jmfnK3Af+b7C8qq+Lo+byJlyAS07jQO9mFEnrZxJ1YgU92L78BAiEA9Y/POIkjvnQUpDD18je1k+CFIoHbaJkA42oycmoI1nUCIQDCVLwjKzl6t
+uTZbDC75V5O+53BL02/EYmJc/qVOgZvEQIgQRGoYVzFofP0fEWVBmgIr3SxEqHCWAcjGx/K2lKKoPkCIQCKa0LLJim+D/I4MEkSPVGMnssCZMhTFZHK93KAwqD8kQIhAOBEHkTJ1hhIylDAiJQnLjW
+A9e3ijKc+Pbcqo3JROxd1
+publicKey:MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALpoQrAuxzoJEJ3svbPUwGGm+rS7R+uIaqYIeTSzjn4Lhz0BCpDngyO/lUEFQqocFxhzSwczT+4TjMOGd2hQ+MUCAwEAAQ==
+password:MCRVnGzxGd9c8o8Mi6gMebG/qhtFInJJinKYvVqSc2i2CKJ1bYPXUuN7XNNHIvvowKjWmsF4eu6K0GAUlb2FCg==

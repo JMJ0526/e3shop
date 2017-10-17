@@ -1,0 +1,383 @@
+
+安装FastDFS
+安装libfastcommon
+
+安装FastDFS之前要先安装它的依赖库libfastcommon,
+
+下载地址:https://github.com/happyfish100/libfastcommon.git
+
+我安装的FastDFS版本5.08
+
+
+具体安装步骤查看它里面的INSTALL文档
+
+ 
+
+解压libfastcommon-master压缩包
+unzip libfastcommon-master.zip
+
+或者
+
+tar -zxvf libfastcommon-master.tar.gz
+
+ 
+
+ 进入libfastcommon目录
+cd libfastcommon
+
+ 
+
+ 编译libfastcommon
+./make.sh
+
+ 
+
+安装libfastcommon
+./make.sh install
+
+ 
+
+安装FastDFS
+下载地址:https://github.com/happyfish100/fastdfs.git
+
+具体安装步骤查看它里面的INSTALL文档
+
+ 
+
+解压FastDFS压缩包
+tar -xzf FastDFS_v5.08.tar.gz
+
+或者
+
+unzip fastdfs-master.zip
+
+ 
+
+进入FastDFS目录
+cd FastDFS
+
+ 
+
+ 编译FastDFS
+./make.sh
+
+ 
+
+ 安装FastDFS
+./make.sh install
+
+ 
+
+修改配置文件
+cd /etc/fdfs/
+
+会看到三个配置文件: 
+
+client.conf.sample, tracker.conf.sample,storage.conf.sample
+
+复制,然后配置:
+
+cp client.conf.sample client.conf
+
+cp tracker.conf.sample tracker.conf
+
+cp storage.conf.sample storage.conf
+
+ 
+
+ 配置storage.conf
+注意：同一个组内的不同的storage的配置要相同(方便同步文件)
+
+配置storage属于哪个group：
+
+group_name=group1 (因为现在先只是配一个组,所以这里就为group1)
+
+配置base_path:
+
+原来 base_path=/home/yuqing/fastdfs 这里需要改为自己的文件路径，
+
+如：base_path=/home/xxx/fastdfs (这里的文件目录如果没有，要自己新建，
+
+不然会报错)
+
+配置store_path0:
+
+这里 store_path0=/home/yuqing/fastdfs 也要改为自己的文件路径
+
+如: store_path0=/home/xxx/fastdfs (建议与bast_path一样)
+
+配置tracker_server:
+
+还有：tracker_server要改为自己的trakcer_server的ip
+
+如：tracker_server=172.16.36.245:22122
+
+(若有特殊要求可查看文档根据实际情况配置)
+
+ 
+
+配置tracker.conf
+配置base_path:
+
+原来 base_path=/home/yuqing/fastdfs 这里需要改为自己的文件路径，
+
+如：base_path=/home/xxx/fastdfs (这里的文件目录如果没有，要自己新建，
+
+不然会报错)
+
+(若有特殊要求可查看文档根据实际情况配置)
+
+ 
+
+ 配置client.conf
+配置base_path:
+
+原来 base_path=/home/yuqing/fastdfs 这里需要改为自己的文件路径，
+
+如：base_path=/home/xxx/fastdfs (这里的文件目录如果没有，要自己新建，
+
+不然会报错)
+
+配置tracker_server:
+
+还有：tracker_server要改为自己的trakcer_server的ip
+
+如：tracker_server=172.16.36.245:22122
+
+(若有特殊要求可查看文档根据实际情况配置)
+
+ 
+
+启动服务程序
+启动tracker server
+/usr/bin/fdfs_trackerd/etc/fdfs/tracker.conf restart
+
+ 
+
+启动storage server
+/usr/bin/fdfs_storaged/etc/fdfs/storage.conf restart
+
+ 
+
+ 启动测试程序
+上传文件测试:
+
+/usr/bin/fdfs_test /etc/fdfs/client.confupload tff.jpeg
+
+上传成功会返回信息如：
+
+This is FastDFS client test program v5.08
+
+ 
+
+Copyright (C) 2008, Happy Fish / YuQing
+
+……(此处省略很多字)
+
+example file url:
+
+http://172.16.36.245/group1/M00/00/00/rBAk9VhH11aAQznLAACgiYdLO3c42_big.jpeg
+
+ 
+
+ 安装Nginx
+准备工作
+Nginx的安装依赖以下三个包，所以必须在安装Nginx之前安装下面的三个依赖包:
+
+SSL功能需要openssl库，下载地址：http://www.openssl.org/
+
+gzip模块需要zlib库，下载地址：http://www.zlib.net/
+
+rewrite模块需要pcre库，下载地址：http://www.pcre.org/
+
+Nginx的安装包：下载地址为：http://nginx.org/en/download.html
+
+安装软件
+安装SSL功能需要的openssl库插件
+注意：(这个一步可以先跳过，后面发现需要再来安装, 因为我安装的时候不需要安装这个, 只是为了完整性写上去而已)
+
+注意：安装过程是按照我在linux下设置的文件路径来安装的，命令如下：
+
+tar -zxvf soft/openssl-SNAP-20160104
+
+cd cd openssl-SNAP-20160104/
+
+./config
+
+make
+
+make install
+
+安装 pcre-8.39.zip
+1. 进入目录：cd  pcre-8.39
+
+2. 执行命令:  ./configure
+
+3. 执行命令:  make
+
+4. 执行命令:  sudo make install
+
+ 
+
+安装　zlib-1.2.8.tar.xz
+   1. 进入目录: cd zlib-1.2.8
+
+   2. 执行命令: ./configure
+
+   3. 执行命令: make
+
+   4. 执行命令: sudo make install
+
+ 
+
+2.2.4出错处理：
+error: You need a C++ compiler for C++support，看到这句话我们就已经猜到了应该是c++包信息，而linux中没有，那么首先安装一下这个包信息即可，安装命令为：
+
+yum install -y gcc gcc-c++
+
+ 
+
+当安装完上面的c++包之后，在此运行，发现消息已经显示安装成功了，当基于上面的东西全部安装完成之后，就需要安装Nginx服务了。
+
+安装Nginx
+1. 进入目录: cd nginx-1.11.2
+
+2. 执行命令: ./configure
+
+3. 执行命令: make
+
+4. 执行命令: sudo makeinstall,   安装成功之后，默认会在/usr/local 下创建nginx 目录
+
+5. 修改目录权限：
+
+chmod a+rwx -R /usr/local/nginx/logs/
+
+chmod a+rwx -R /usr/local/nginx/
+
+6. 检测配置文件是否正确
+
+检测命令:/usr/local/nginx/sbin/nginx -t
+
+[root@bogon picture_server]# /usr/local/nginx/sbin/nginx -t
+
+nginx: the configuration file /usr/local/nginx/conf/nginx.confsyntax is ok
+
+nginx: configuration file /usr/local/nginx/conf/nginx.conf test issuccessful
+
+启动Nginx
+启动命令：
+
+/usr/local/nginx/sbin/nginx
+
+[root@bogon picture_server]#/usr/local/nginx/sbin/nginx
+
+ngx_http_fastdfs_set pid=25060
+
+浏览器中输入: localhost, nginx 监听的89 端口(默认监听80)
+
+
+安装fastdfs-nginx-module
+下载地址：https://github.com/happyfish100/fastdfs-nginx-module/
+
+fastdfs-nginx_module作用:在storage之间同步数据时候,还没同步完全时候就发生下载时,直接从源数据storage下载
+
+将fastdfs-nginx-module压缩包解压,并记录下它的路径,因为安装的时候要用到
+
+进入nginx的安装包的源目录，然后编译和安装fastdfs-nginx-module
+命令如下：
+
+注意：要先关闭所有的nginx进程，在进行下面这一步骤
+
+cd nginx
+
+./configure --add-module=/home/ningqijun/fastdfs-nginx-module/src
+
+(/home/ningqijun/fastdfs-nginx-module/src根据自己的文件目录来配)
+
+make
+
+make install
+
+配置nginx.conf
+(默认nginx.conf是在目录/usr/local/nginx/conf/ 里面的)
+
+命令:
+
+cd /usr/local/nginx/conf/
+
+vi nginx.conf
+
+只有一个group默认配置
+最简单的配置：当mod_fastdfs.conf 配置文件中只有一个group1, 且配置了　url_have_group_name = false　时，即访问地址不使用分组名称，那么只需在nginx的配置文件中增加以下配置即可:
+
+在nginx.conf里面的server{里面添加location /M00……}，添加下面的几行：
+
+location /M00 {
+
+      root /home/ningqijun/fastdfs/data;
+
+      ngx_fastdfs_module;
+
+}
+
+多个group的配置
+当配置多个组，且mod_fastdfs.conf 里面指定了url_have_group_name= true 时，配置方式:
+
+location ~  /group([0-9]) /M00 {
+
+      root /home/ningqijun/fastdfs/data;
+
+      ngx_fastdfs_module;
+
+}
+
+比如:在group1上的 nginx 的nginx.conf 配置是
+
+location  /group1 /M00 {
+
+      root /home/ningqijun/fastdfs/data;
+
+      ngx_fastdfs_module;
+
+}
+
+比如:在group2上的 nginx 的nginx.conf 配置是
+
+location   /group2 /M00 {
+
+      root /home/ningqijun/fastdfs/data;
+
+      ngx_fastdfs_module;
+
+}
+
+ 
+
+创建/M00软连接
+命令：ln -s /home/ningqijun/fastdfs/data /home/ningqijun/fastdfs/data/M00
+
+修改mod_fastdfs.conf
+将/home/…/fastdfs-nginx-module-master/src(位置看自己将解压到哪里)
+
+里面的mod_fastdfs.conf复制到/etc/fdfs/里面
+
+1.       更改tracker_server的IP如：tracker_server=172.16.36.245:22122
+
+2.       更改store_path0这个要与storaged的配置一致,如：store_path0=/home/ningqijun/fastdfs
+
+重新启动Nginx
+将FastDFS配置目录下的2个文件复制到/etc/fdfs目录下：
+
+cp  /usr/local/fastdfs /conf/http.conf   /etc/fdfs/
+
+cp  /usr/local/fastdfs/conf/mime.types  /etc/fdfs/
+
+ 
+
+命令：
+
+/usr/local/nginx/sbin/nginx -s stop
+
+/usr/local/nginx/sbin/nginx
+
+注意：要实现HTTP下载必须要求Nginx和fastdfs-nginx-module起来

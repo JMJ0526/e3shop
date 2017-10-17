@@ -1,0 +1,18 @@
+第一步:
+  搭建zookeeper集群(3,5,7....台)
+
+第二步:
+  修改tomcat  bin目录下的catalina.sh
+  
+  在第一次引用JAVA_OPTS的地方之前
+  添加 JAVA_OPTS="-DzkHost=192.168.1.102:2181,192.168.1.103:2181,192.168.1.105:2181"(zookeeper集群的列表)
+
+第三步：
+  修改 solrhome下的solr.xml
+  <!--tomcat的启动地址和端口-->
+  <str name="host">192.168.1.105</str>
+  <int name="hostPort">8080</int>
+
+第四步，将solrhome下的core的相关配置文件上传到zookeeper统一管理
+ 进入到solr/script/cloud-script的目录下
+./zkcli.sh -zkhost 192.168.1.102:2181,192.168.1.103:2181,192.168.1.105:2181 -cmd upconfig -confdir  /opt/solr-6.6.1/server/e3home/e3mail -confname e3conf

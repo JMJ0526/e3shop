@@ -1,0 +1,41 @@
+在上一章中导入数据的方式是全量导入，如果每次导入数据都是全量导入的话，首先是没必要，其次在海量数据下对服务器的压力也较大。所以合理的方式是更新索引采用定时增量更新。
+
+二、修改数据库
+在数据库中新增一个timestamp类型的字段，并且默认值为CURRENT_TIMESTAMP
+CREATE TABLE `image_info` (
+  `id` varchar(32) NOT NULL,
+  `src` text,
+  `update_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+Solr是根据新增的update_date字段来判断增量的数据。因为solr本身有一个默认值last_index_time，记录最后一次做full import或者是delta import(增量导入）的时间，这个值存储在文件conf目录的dataimport.properties文件中。
+三、data-config.xml配置：
+<dataConfig>  
+    <dataSource type="JdbcDataSource" driver="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/dbname" user="root" password="***" />   
+    <document>  
+        <entity name="imageInfo" pk="id" query="select id,src,key_info from image_info"
+deltaImportQuery="SELECT id,src,key_info FROM image_info where id='${dih.delta.id}'" 
+deltaQuery="SELECT id FROM image_info where update_date > '${dih.last_index_time}'">  
+            <field column="id" name="id"/>   
+            <field column="src" name="src"/>   
+            <field column="key_info" name="key_info"/>   
+   <field column="update_date" name="update_date"/>   
+        </entity>  
+    </document>  
+</dataConfig>
+
+配置说明：
+query:查询数据库表符合记录数据。
+deltaQuery:增量索引查询主键ID，这个只能返回ID字段。
+deltaImportQuery:增量索引查询导入的数据。
+
+
+更新过程：
+1：按照query指定的SQL语句查询出符合条件的记录。
+
+2：从这些数据中根据deltaQuery指定的SQL语句查询出所有需要增量导入的数据的ID。
+3：deltaImportQuery指定的SQL语句返回所有这些ID的数据，即为这次增量导入所要处理的数据。
+
+
+核心思想：通过内置变量“${dih.delta.id}”和 “${dih.last_index_time}”来记录本次要索引的id和最近一次索引的时间。如果update_date的时间大于配置文件中记录的最后一次更新时间，则该条记录为增量数据。

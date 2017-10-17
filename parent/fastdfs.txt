@@ -1,0 +1,426 @@
+[html] view plain copy print?
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"    
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">    
+    <modelVersion>4.0.0</modelVersion>     
+    <groupId>com.leech</groupId>    
+    <artifactId>fastdfs-demo</artifactId>    
+    <version>0.0.1-SNAPSHOT</version>    
+    <packaging>jar</packaging>     
+    <name>fastdfs-demo</name>    
+    <url>http://maven.apache.org</url>     
+    <properties>      
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>    
+    </properties>     
+      
+    <dependencies>      
+        <dependency>        
+            <groupId>junit</groupId>        
+            <artifactId>junit</artifactId>        
+            <version>4.11</version>        
+            <scope>test</scope>      
+        </dependency>           
+        <dependency>        
+            <groupId>org.csource</groupId>        
+            <artifactId>fastdfs-client-java</artifactId>        
+            <version>1.25</version>      
+        </dependency>           
+        <dependency>          
+            <groupId>commons-io</groupId>          
+            <artifactId>commons-io</artifactId>          
+            <version>2.4</version>      
+            </dependency>         
+        </dependencies>  
+    </project>  
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">  
+	<modelVersion>4.0.0</modelVersion>   
+	<groupId>com.leech</groupId>  
+	<artifactId>fastdfs-demo</artifactId>  
+	<version>0.0.1-SNAPSHOT</version>  
+	<packaging>jar</packaging>   
+	<name>fastdfs-demo</name>  
+	<url>http://maven.apache.org</url>   
+	<properties>    
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  
+	</properties>   
+	
+	<dependencies>    
+		<dependency>      
+			<groupId>junit</groupId>      
+			<artifactId>junit</artifactId>      
+			<version>4.11</version>      
+			<scope>test</scope>    
+		</dependency>         
+		<dependency>      
+			<groupId>org.csource</groupId>      
+			<artifactId>fastdfs-client-java</artifactId>      
+			<version>1.25</version>    
+		</dependency>         
+		<dependency>        
+			<groupId>commons-io</groupId>        
+			<artifactId>commons-io</artifactId>        
+			<version>2.4</version>    
+			</dependency>       
+		</dependencies>
+	</project>
+当然，更多时候我们利用maven的继承特性，直接配置在父工程中，然后继承下来就o了。
+
+
+
+2、新建fdfs_client.conf文件，在我们的itoo中，我们建立在（src/main/resources底下）
+
+[html] view plain copy print?
+connect_timeout = 2  
+network_timeout = 30  
+charset = UTF-8  
+http.tracker_http_port = 80   
+#没什么用  
+http.anti_steal_token = no  
+http.secret_key = FastDFS1234567890  
+tracker_server = 192.168.17.112:22122   
+#tracker_server = 192.168.0.119:22122  
+
+connect_timeout = 2
+network_timeout = 30
+charset = UTF-8
+http.tracker_http_port = 80 
+#没什么用
+http.anti_steal_token = no
+http.secret_key = FastDFS1234567890
+tracker_server = 192.168.17.112:22122 
+#tracker_server = 192.168.0.119:22122
+
+
+
+
+3、实现文件上传：
+
+[java] view plain copy print?
+      public void save(HttpServletRequest request,HttpServletResponse response){          
+    String videoName=request.getParameter("videoName");  
+    String videoType=request.getParameter("videoType");  
+    String videoDesc=request.getParameter("videoDesc");  
+    String videoPath=request.getParameter("videoPath");  
+    String picturePath=request.getParameter("picturePath");  
+  
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");  
+    Date uploadTime=null;  
+    try {  
+        uploadTime = formatter.parse(formatter.format(new Date()));  
+    } catch (ParseException e) {  
+        // TODO Auto-generated catch block   
+        e.printStackTrace();  
+    }  
+      
+    JacksonJsonUntil jackJsonUtil =new JacksonJsonUntil ();  
+      
+    String dataBaseName = "itoo_video";  
+  
+    Video video=new Video();  
+    video.setUserName("why");  
+    video.setUserID("why");       
+    video.setVideoName(videoName);  
+    video.setVideoPath(videoPath);  
+    video.setVideoType(videoType);  
+    video.setVideoDesc(videoDesc);    
+    video.setDataBaseName(dataBaseName);  
+    video.setPicturePath(picturePath);  
+    video.setUploadTime(uploadTime);  
+      
+    uploadFileService.save(video);        
+      
+       jackJsonUtil.beanToJson(response,video);  
+      
+}  
+  
+/* 
+ * 上传文件 
+ */  
+@RequestMapping(value={"/upload"})  
+@ResponseBody  
+public void upload( MultipartFile file, HttpServletRequest request,HttpServletResponse response){         
+      
+    String ext_Name = file.getOriginalFilename().split("\\.")[1];  
+    String videoName=file.getOriginalFilename().split("\\.")[0];  
+      
+       byte[] bytes = null;  
+    try {  
+        bytes = file.getBytes();  
+    } catch (IOException e) {  
+        e.printStackTrace();  
+    }  
+    String videoPath=uploadFile(bytes,ext_Name);  
+      
+    JacksonJsonUntil jackJsonUtil =new JacksonJsonUntil ();  
+      
+    Video video=new Video();  
+    video.setVideoPath(videoPath);  
+    video.setVideoName(videoName);        
+      
+    jackJsonUtil.beanToJson(response,video);  
+}   
+  
+public String uploadFile(byte[] byteFile, String ext_file) {  
+    // 拼接服务区的文件路径   
+    StringBuffer sbPath = new StringBuffer();  
+    sbPath.append("http://192.168.22.252");  
+    try {  
+        // 初始化文件资源   
+        ClientGlobal  
+                .init("C:\\Users\\alsr\\Desktop\\ITOO-5.0\\itoo-video-Test\\dmsd-itoo-video-parent\\dmsd-itoo-video-web\\src\\main\\resources\\fdfs_client.conf");  
+  
+        // 链接FastDFS服务器，创建tracker和Stroage   
+        TrackerClient trackerClient = new TrackerClient();  
+        TrackerServer trackerServer = trackerClient.getConnection();  
+        StorageServer storageServer = null;  
+        StorageClient storageClient = new StorageClient(trackerServer,  
+                storageServer);  
+        //利用字节流上传文件   
+        String[] strings = storageClient.upload_file(byteFile, ext_file, null);  
+  
+        for (String string : strings) {  
+            sbPath.append("/" + string);  
+            System.out.println(string);  
+        }  
+        // 全路径   
+        System.out.println(sbPath);  
+    } catch (IOException | MyException e) {  
+        e.printStackTrace();  
+    }  
+    return sbPath.toString();  
+}  
+
+       public void save(HttpServletRequest request,HttpServletResponse response){		
+		String videoName=request.getParameter("videoName");
+		String videoType=request.getParameter("videoType");
+		String videoDesc=request.getParameter("videoDesc");
+		String videoPath=request.getParameter("videoPath");
+		String picturePath=request.getParameter("picturePath");
+
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date uploadTime=null;
+		try {
+			uploadTime = formatter.parse(formatter.format(new Date()));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		JacksonJsonUntil jackJsonUtil =new JacksonJsonUntil ();
+		
+		String dataBaseName = "itoo_video";
+	
+		Video video=new Video();
+		video.setUserName("why");
+		video.setUserID("why");		
+		video.setVideoName(videoName);
+		video.setVideoPath(videoPath);
+		video.setVideoType(videoType);
+		video.setVideoDesc(videoDesc);	
+		video.setDataBaseName(dataBaseName);
+		video.setPicturePath(picturePath);
+		video.setUploadTime(uploadTime);
+		
+		uploadFileService.save(video);		
+		
+        jackJsonUtil.beanToJson(response,video);
+		
+	}
+	
+	/*
+	 * 上传文件
+	 */
+	@RequestMapping(value={"/upload"})
+	@ResponseBody
+	public void upload( MultipartFile file, HttpServletRequest request,HttpServletResponse response){		
+		
+		String ext_Name = file.getOriginalFilename().split("\\.")[1];
+		String videoName=file.getOriginalFilename().split("\\.")[0];
+		
+        byte[] bytes = null;
+		try {
+			bytes = file.getBytes();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String videoPath=uploadFile(bytes,ext_Name);
+		
+		JacksonJsonUntil jackJsonUtil =new JacksonJsonUntil ();
+		
+		Video video=new Video();
+		video.setVideoPath(videoPath);
+		video.setVideoName(videoName);		
+		
+		jackJsonUtil.beanToJson(response,video);
+	} 
+	
+	public String uploadFile(byte[] byteFile, String ext_file) {
+		// 拼接服务区的文件路径
+		StringBuffer sbPath = new StringBuffer();
+		sbPath.append("http://192.168.22.252");
+		try {
+			// 初始化文件资源
+			ClientGlobal
+					.init("C:\\Users\\alsr\\Desktop\\ITOO-5.0\\itoo-video-Test\\dmsd-itoo-video-parent\\dmsd-itoo-video-web\\src\\main\\resources\\fdfs_client.conf");
+
+			// 链接FastDFS服务器，创建tracker和Stroage
+			TrackerClient trackerClient = new TrackerClient();
+			TrackerServer trackerServer = trackerClient.getConnection();
+			StorageServer storageServer = null;
+			StorageClient storageClient = new StorageClient(trackerServer,
+					storageServer);
+			//利用字节流上传文件
+			String[] strings = storageClient.upload_file(byteFile, ext_file, null);
+
+			for (String string : strings) {
+				sbPath.append("/" + string);
+				System.out.println(string);
+			}
+			// 全路径
+			System.out.println(sbPath);
+		} catch (IOException | MyException e) {
+			e.printStackTrace();
+		}
+		return sbPath.toString();
+	}
+       只要我们能正常接收到一个json类型的字符串（url地址），就证明我们已经上传成功了，如果不信，可以直接用浏览器去验证一下，看看能不能得到文件展示。
+
+
+
+
+4、FastDFS实现文件下载：
+
+[java] view plain copy print?
+public void testDownload() {          
+        try {               
+            ClientGlobal.init(conf_filename);               
+            TrackerClient tracker = new TrackerClient();               
+            TrackerServer trackerServer = tracker.getConnection();              
+            StorageServer storageServer = null;               
+            StorageClient storageClient = new StorageClient(trackerServer, storageServer);               
+            byte[] b = storageClient.download_file("group1", "M00/00/00/wKgRcFV_08OAK_KCAAAA5fm_sy874.conf");               
+            System.out.println(b);               
+            IOUtils.write(b, new FileOutputStream("D:/"+UUID.randomUUID().toString()+".conf"));          
+            }   
+        catch (Exception e) {               
+            e.printStackTrace();           
+        }       
+    }         
+
+public void testDownload() {        
+		try {             
+			ClientGlobal.init(conf_filename);             
+			TrackerClient tracker = new TrackerClient();             
+			TrackerServer trackerServer = tracker.getConnection();            
+			StorageServer storageServer = null;             
+			StorageClient storageClient = new StorageClient(trackerServer, storageServer);             
+			byte[] b = storageClient.download_file("group1", "M00/00/00/wKgRcFV_08OAK_KCAAAA5fm_sy874.conf");             
+			System.out.println(b);             
+			IOUtils.write(b, new FileOutputStream("D:/"+UUID.randomUUID().toString()+".conf"));        
+			} 
+		catch (Exception e) {             
+			e.printStackTrace();         
+		}     
+	}       
+
+
+
+
+5、FastDFS获取将上传文件信息：
+
+[java] view plain copy print?
+public void testGetFileInfo(){           
+        try {               
+            ClientGlobal.init(conf_filename);               
+            TrackerClient tracker = new TrackerClient();               
+            TrackerServer trackerServer = tracker.getConnection();               
+            StorageServer storageServer = null;               
+            StorageClient storageClient = new StorageClient(trackerServer, storageServer);               
+            FileInfo fi = storageClient.get_file_info("group1", "M00/00/00/wKgRcFV_08OAK_KCAAAA5fm_sy874.conf");               
+            System.out.println(fi.getSourceIpAddr());             System.out.println(fi.getFileSize());               
+            System.out.println(fi.getCreateTimestamp());             System.out.println(fi.getCrc32());           
+            }     
+        catch (Exception e) {               
+            e.printStackTrace();           
+            }       
+        }         
+
+public void testGetFileInfo(){         
+		try {             
+			ClientGlobal.init(conf_filename);             
+			TrackerClient tracker = new TrackerClient();             
+			TrackerServer trackerServer = tracker.getConnection();             
+			StorageServer storageServer = null;             
+			StorageClient storageClient = new StorageClient(trackerServer, storageServer);             
+			FileInfo fi = storageClient.get_file_info("group1", "M00/00/00/wKgRcFV_08OAK_KCAAAA5fm_sy874.conf");             
+			System.out.println(fi.getSourceIpAddr());             System.out.println(fi.getFileSize());             
+			System.out.println(fi.getCreateTimestamp());             System.out.println(fi.getCrc32());         
+			} 	
+		catch (Exception e) {             
+			e.printStackTrace();         
+			}     
+		}       
+
+
+
+
+6、FastDFS获取文件名称：
+
+[java] view plain copy print?
+public void testGetFileMate(){           
+        try {              
+            ClientGlobal.init(conf_filename);               
+            TrackerClient tracker = new TrackerClient();               
+            TrackerServer trackerServer = tracker.getConnection();               
+            StorageServer storageServer = null;               
+            StorageClient storageClient = new StorageClient(trackerServer,                       
+            storageServer);               
+            NameValuePair nvps [] = storageClient.get_metadata("group1", "M00/00/00/wKgRcFV_08OAK_KCAAAA5fm_sy874.conf");               
+            for(NameValuePair nvp : nvps){                   
+                System.out.println(nvp.getName() + ":" + nvp.getValue());              
+                }           
+            }   
+        catch (Exception e) {               
+            e.printStackTrace();           
+            }       
+    }      
+
+	public void testGetFileMate(){         
+			try {            
+				ClientGlobal.init(conf_filename);             
+				TrackerClient tracker = new TrackerClient();             
+				TrackerServer trackerServer = tracker.getConnection();             
+				StorageServer storageServer = null;             
+				StorageClient storageClient = new StorageClient(trackerServer,                     
+				storageServer);             
+				NameValuePair nvps [] = storageClient.get_metadata("group1", "M00/00/00/wKgRcFV_08OAK_KCAAAA5fm_sy874.conf");             
+				for(NameValuePair nvp : nvps){                 
+					System.out.println(nvp.getName() + ":" + nvp.getValue());            
+					}         
+				} 
+			catch (Exception e) {             
+				e.printStackTrace();         
+				}     
+		}    
+
+
+
+7、FastDFS实现删除文件：
+
+
+[java] view plain copy print?
+          public void testDelete(){           
+try {               
+    ClientGlobal.init(conf_filename);               
+    TrackerClient tracker = new TrackerClient();               
+    TrackerServer trackerServer = tracker.getConnection();               
+    StorageServer storageServer = null;               
+    StorageClient storageClient = new StorageClient(trackerServer,storageServer);               
+    int i = storageClient.delete_file("group1", "M00/00/00/wKgRcFV_08OAK_KCAAAA5fm_sy874.conf");               
+    System.out.println( i==0 ? "删除成功" : "删除失败:"+i);           
+    }   
+catch (Exception e) {               
+    e.printStackTrace();           
+    }       
+          }  
