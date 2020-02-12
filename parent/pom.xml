@@ -59,7 +59,7 @@
 		<zkclient.version>0.1</zkclient.version>
 
 		<!-- solrj -->
-		<solrj.version>6.6.1</solrj.version>
+		<solrj.version>8.4.1</solrj.version>
 
 		<!-- freemarker -->
 		<freemarker.version>2.3.23</freemarker.version>
